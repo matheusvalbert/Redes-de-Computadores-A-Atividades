@@ -6,6 +6,7 @@
 #include <netinet/in.h>
 #include <unistd.h>
 #include <arpa/inet.h>
+#include <string.h>
 
 /*
  * Cliente UDP
@@ -16,14 +17,14 @@ char **argv;
 {
 
 
-   int s;
+   int s, server_address_size;
    unsigned short port;
    struct sockaddr_in server;
-   char buf[32];
+   char buf[200], buff[200];
 
    /* 
-    * O primeiro argumento (argv[1]) é o endereço IP do servidor.
-    * O segundo argumento (argv[2]) é a porta do servidor.
+    * O primeiro argumento (argv[1]) ï¿½ o endereï¿½o IP do servidor.
+    * O segundo argumento (argv[2]) ï¿½ a porta do servidor.
     */
    if(argc != 3)
    {
@@ -41,20 +42,31 @@ char **argv;
        exit(1);
    }
 
-   /* Define o endereço IP e a porta do servidor */
-   server.sin_family      = AF_INET;            /* Tipo do endereço         */
+   /* Define o endereï¿½o IP e a porta do servidor */
+   server.sin_family      = AF_INET;            /* Tipo do endereï¿½o         */
    server.sin_port        = port;               /* Porta do servidor        */
-   server.sin_addr.s_addr = inet_addr(argv[1]); /* Endereço IP do servidor  */
+   server.sin_addr.s_addr = inet_addr(argv[1]); /* Endereï¿½o IP do servidor  */
 
-   strcpy(buf, "Hello");
+   do{
+   printf("\n> ");
+   fgets(buf, sizeof(buf), stdin);
 
    /* Envia a mensagem no buffer para o servidor */
-   if (sendto(s, buf, (strlen(buf)+1), 0, (struct sockaddr *)&server, sizeof(server)) < 0)
-   {
+   if (sendto(s, buf, 200+1, 0, (struct sockaddr *)&server, sizeof(server)) < 0){
        perror("sendto()");
        exit(2);
    }
+   server_address_size = sizeof(server);
+   if(strcmp(buf, "exit\n") != 0){ 
+   if(recvfrom(s, buff, sizeof(buff), 0, (struct sockaddr *) &server, &server_address_size) <0)
+   {
+       perror("recvfrom()");
+       exit(1);
+   }
+   printf("Mensagem: %sRecebida com Sucesso\n",buff);
+   }
 
+   }while(strcmp(buf, "exit\n") != 0);
    /* Fecha o socket */
    close(s);
 

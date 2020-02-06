@@ -9,11 +9,14 @@
 /*
  * Servidor UDP
  */
-int main()
+int main(argc, argv)
+int argc;
+char **argv;
 {
    int sockint,s, namelen, client_address_size;
+   unsigned short port;
    struct sockaddr_in client, server;
-   char buf[32];
+   char buf[200];
 
    /*
     * Cria um socket UDP (dgram). 
@@ -24,18 +27,20 @@ int main()
        exit(1);
    }
 
-   /*
-    * Define a qual endereço IP e porta o servidor estará ligado.
-    * Porta = 0 -> faz com que seja utilizada uma porta qualquer livre.
-    * IP = INADDDR_ANY -> faz com que o servidor se ligue em todos
-    * os endereços IP
-    */
-   server.sin_family      = AF_INET;   /* Tipo do endereço             */
-   server.sin_port        = 0;         /* Escolhe uma porta disponível */
-   server.sin_addr.s_addr = INADDR_ANY;/* Endereço IP do servidor      */
+   port = htons(atoi(argv[1]));
 
    /*
-    * Liga o servidor à porta definida anteriormente.
+    * Define a qual endereï¿½o IP e porta o servidor estarï¿½ ligado.
+    * Porta = 0 -> faz com que seja utilizada uma porta qualquer livre.
+    * IP = INADDDR_ANY -> faz com que o servidor se ligue em todos
+    * os endereï¿½os IP
+    */
+   server.sin_family      = AF_INET;   /* Tipo do endereï¿½o             */
+   server.sin_port        = port;      /* Escolhe uma porta disponï¿½vel */
+   server.sin_addr.s_addr = INADDR_ANY;/* Endereï¿½o IP do servidor      */
+
+   /*
+    * Liga o servidor ï¿½ porta definida anteriormente.
     */
    if (bind(s, (struct sockaddr *)&server, sizeof(server)) < 0)
    {
@@ -43,20 +48,12 @@ int main()
        exit(1);
    }
 
-   /* Consulta qual porta foi utilizada. */
-   namelen = sizeof(server);
-   if (getsockname(s, (struct sockaddr *) &server, &namelen) < 0)
-   {
-       perror("getsockname()");
-       exit(1);
-   }
-
    /* Imprime qual porta foi utilizada. */
-   printf("Porta utilizada é %d\n", ntohs(server.sin_port));
-
+   printf("Porta utilizada ï¿½ %d\n", ntohs(server.sin_port));
+   while(1){
    /*
     * Recebe uma mensagem do cliente.
-    * O endereço do cliente será armazenado em "client".
+    * O endereï¿½o do cliente serï¿½ armazenado em "client".
     */
    client_address_size = sizeof(client);
    if(recvfrom(s, buf, sizeof(buf), 0, (struct sockaddr *) &client,
@@ -66,13 +63,19 @@ int main()
        exit(1);
    }
 
-   /*
-    * Imprime a mensagem recebida, o endereço IP do cliente
-    * e a porta do cliente 
-    */
-   printf("Recebida a mensagem %s do endereço IP %s da porta %d\n",buf,inet_ntoa(client.sin_addr),ntohs(client.sin_port));
+   if (sendto(s, buf, 200+1, 0, (struct sockaddr *)&client, sizeof(client)) < 0){
+       perror("sendto()");
+       exit(2);
+   }
 
    /*
+    * Imprime a mensagem recebida, o endereï¿½o IP do cliente
+    * e a porta do cliente 
+    */
+   printf("Recebida a mensagem %s do endereï¿½o IP %s da porta %d\n",buf,inet_ntoa(client.sin_addr),ntohs(client.sin_port));
+   }
+   /*
+
     * Fecha o socket.
     */
    close(s);
