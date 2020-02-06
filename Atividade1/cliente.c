@@ -46,6 +46,10 @@ char **argv;
    server.sin_family      = AF_INET;            /* Tipo do endereço         */
    server.sin_port        = port;               /* Porta do servidor        */
    server.sin_addr.s_addr = inet_addr(argv[1]); /* Endereço IP do servidor  */
+
+/* Imprime qual porta foi utilizada. */
+   printf("Porta utilizada eh %d\n", ntohs(server.sin_port));
+
 	while(1)
 	{
 		printf("> ");

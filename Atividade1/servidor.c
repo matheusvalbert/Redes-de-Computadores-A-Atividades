@@ -60,12 +60,11 @@ char **argv;
 	while(1)
 	{
 		client_address_size = sizeof(client);
-		if(recvfrom(s, buf, sizeof(buf), 0, (struct sockaddr *) &client,&client_address_size) <0)
+		if(recvfrom(s, buf, sizeof(buf), 0, (struct sockaddr *) &server,&client_address_size) <0)
 		{
 			perror("recvfrom()");
 			exit(1);
 		}
-
 
 		strcpy(buf2, "Mensagem recebida: ");
 		strcat(buf2, buf);
@@ -78,7 +77,7 @@ char **argv;
 	    * Imprime a mensagem recebida, o endereço IP do cliente
 	    * e a porta do cliente 
 	    */
-		printf("Recebida a mensagem %s do endereço IP %s da porta %d\n",buf,inet_ntoa(client.sin_addr),ntohs(client.sin_port));
+		printf("Recebida a mensagem %s do endereço IP %s da porta %d\n",buf,inet_ntoa(server.sin_addr),ntohs(server.sin_port));
 	}
    /*
     * Fecha o socket.
