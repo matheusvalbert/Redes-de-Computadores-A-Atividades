@@ -5,6 +5,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
+#include <string.h>
 
 /*
  * Servidor UDP
@@ -16,7 +17,8 @@ char **argv;
    int sockint,s, namelen, client_address_size;
    unsigned short port;
    struct sockaddr_in client, server;
-   char buf[32];
+   char buf[201];
+	char buf2[250];
 
    /*
     * Cria um socket UDP (dgram). 
@@ -49,26 +51,35 @@ char **argv;
    }
 
    /* Imprime qual porta foi utilizada. */
-   printf("Porta utilizada é %d\n", ntohs(server.sin_port));
+   printf("Porta utilizada eh %d\n", ntohs(server.sin_port));
 
    /*
     * Recebe uma mensagem do cliente.
     * O endereço do cliente será armazenado em "client".
     */
-   client_address_size = sizeof(client);
-   if(recvfrom(s, buf, sizeof(buf), 0, (struct sockaddr *) &client,
-            &client_address_size) <0)
-   {
-       perror("recvfrom()");
-       exit(1);
-   }
+	while(1)
+	{
+		client_address_size = sizeof(client);
+		if(recvfrom(s, buf, sizeof(buf), 0, (struct sockaddr *) &client,&client_address_size) <0)
+		{
+			perror("recvfrom()");
+			exit(1);
+		}
 
-   /*
-    * Imprime a mensagem recebida, o endereço IP do cliente
-    * e a porta do cliente 
-    */
-   printf("Recebida a mensagem %s do endereço IP %s da porta %d\n",buf,inet_ntoa(client.sin_addr),ntohs(client.sin_port));
 
+		strcpy(buf2, "Mensagem recebida: ");
+		strcat(buf2, buf);
+		if (sendto(s, buf2, strlen(buf2)+1, 0, (struct sockaddr *)&server, sizeof(server)) < 0)
+		{
+			perror("sendto()");
+			exit(2);
+		}
+	   /*
+	    * Imprime a mensagem recebida, o endereço IP do cliente
+	    * e a porta do cliente 
+	    */
+		printf("Recebida a mensagem %s do endereço IP %s da porta %d\n",buf,inet_ntoa(client.sin_addr),ntohs(client.sin_port));
+	}
    /*
     * Fecha o socket.
     */
