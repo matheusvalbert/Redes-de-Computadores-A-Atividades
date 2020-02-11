@@ -79,7 +79,7 @@ char **argv;
 		
 		//recebe resposta do servidor
 		server_address_size = sizeof(server);
-		if(recvfrom(s, bufReceive, sizeof(buf), 0, (struct sockaddr *)&server,&server_address_size) <0)
+		if(recvfrom(s, bufReceive, sizeof(bufReceive), 0, (struct sockaddr *)&server,&server_address_size) <0)
 		{
 			perror("recvfrom()");
 			exit(1);
