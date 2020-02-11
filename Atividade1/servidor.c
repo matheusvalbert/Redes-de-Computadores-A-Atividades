@@ -15,11 +15,13 @@ int main(argc, argv)
 int argc;
 char **argv;
 {
+	FILE *fp;
 	int s, server_address_size;
 	unsigned short port;
 	struct sockaddr_in server;
-	char buf[201];
-	char buf2[250];
+	char bufReceive[201];
+	char bufSend[2001];
+	char bufAux[2001];
 
 	if(argc != 2)
 	{
@@ -72,25 +74,47 @@ char **argv;
 
 	while(1)
 	{
+		//recebe o comando do client
 		server_address_size = sizeof(server);
-		if(recvfrom(s, buf, sizeof(buf), 0, (struct sockaddr *) &server,&server_address_size) <0)
+		if(recvfrom(s, bufReceive, sizeof(bufReceive), 0, (struct sockaddr *) &server,&server_address_size) <0)
 		{
 			perror("recvfrom()");
 			exit(1);
 		}
 
+		//executa o comando do cliente
+		fp = popen(bufReceive, "r");
+  		if (fp == NULL) {
+    			printf("Erro ao executar comando");
+			exit(1);
+  		}
 
-		strcpy(buf2, buf);
-		if (sendto(s, buf2, strlen(buf2)+1, 0, (struct sockaddr *)&server, sizeof(server)) < 0)
+		//recebe a resposta do cliente em um buffer auxiliar e colocar no buff para ser enviado de volta ao cliente
+		while (fgets(bufAux, sizeof(bufAux), fp) != NULL) {
+
+			strcat(bufSend, bufAux);
+   		}
+
+		pclose(fp);
+
+		//resposta para comandos que nao apresentam output
+		if(bufSend[0] == '\0')
+			strcpy(bufSend, "Comando Executado");
+
+		//envia resposta do comando de volta para o cliente
+		if (sendto(s, bufSend, strlen(bufSend)+1, 0, (struct sockaddr *)&server, sizeof(server)) < 0)
 		{
 			perror("sendto()");
 			exit(2);
 		}
+
+		//limpa buffer de resposta
+		bufSend[0] = '\0';
 	   /*
 	    * Imprime a mensagem recebida, o endereço IP do cliente
 	    * e a porta do cliente 
 	    */
-		printf("Recebida a mensagem %s do endereco IP %s da porta %d\n",buf,inet_ntoa(server.sin_addr),ntohs(server.sin_port));
+		printf("Comando Recebido IP: %s Porta: %d\n",inet_ntoa(server.sin_addr),ntohs(server.sin_port));
 	}
 
 	/*

@@ -22,8 +22,8 @@ char **argv;
 	int s, server_address_size;
 	unsigned short port;
 	struct sockaddr_in server;
-	char buf[250];
-	char buf2[250];
+	char bufSend[201];
+	char bufReceive[2001];
 
 	/* 
 	 * O primeiro argumento (argv[1]) é o endereço IP do servidor.
@@ -56,14 +56,14 @@ char **argv;
 		printf("> ");
 		__fpurge(stdin);
 		/* Recebendo a string desejada */
-		fgets(buf, sizeof(buf), stdin);
+		fgets(bufSend, sizeof(bufSend), stdin);
 
 		/* Remoção da adição da nova linha */
-		if(buf[strlen(buf)-1] == '\n')
-			buf[strlen(buf)-1] = '\0';
+		if(bufSend[strlen(bufSend)-1] == '\n')
+			bufSend[strlen(bufSend)-1] = '\0';
 
 		/* Finalização utilizando o exit */
-		if(strcmp(buf,"exit") == 0)
+		if(strcmp(bufSend,"exit") == 0)
 		{	
 			close(s);
 			return 0;
@@ -71,19 +71,22 @@ char **argv;
 
 		/* Envia a mensagem no buffer para o servidor */
 
-		if (sendto(s, buf, strlen(buf)+1, 0, (struct sockaddr *)&server, sizeof(server)) < 0)
+		if (sendto(s, bufSend, strlen(bufSend)+1, 0, (struct sockaddr *)&server, sizeof(server)) < 0)
 		{
 			perror("sendto()");
 			exit(2);
 		}
 		
+		//recebe resposta do servidor
 		server_address_size = sizeof(server);
-		if(recvfrom(s, buf2, sizeof(buf), 0, (struct sockaddr *)&server,&server_address_size) <0)
+		if(recvfrom(s, bufReceive, sizeof(buf), 0, (struct sockaddr *)&server,&server_address_size) <0)
 		{
 			perror("recvfrom()");
 			exit(1);
 		}
-		printf("Recebida a mensagem %s do endereco IP %s da porta %d\n",buf2,inet_ntoa(server.sin_addr),ntohs(server.sin_port));
+
+		//print da resposta do servidor
+		printf("\nResposta do Servidor:\n%s\n", bufReceive);
 	}
 
 
