@@ -15,6 +15,12 @@ struct Mensagem {
 	char mensagem[80];
 };
 
+struct GuardarMensagens {
+
+	struct Mensagem array[10];
+	int count;
+};
+
 /*
  * Cliente TCP
  */
@@ -26,9 +32,11 @@ int main(int argc, char **argv)
     struct hostent *hostnm;    
     struct sockaddr_in server; 
     int s;
+    char nome[20];
 
     int operacao;
-    struct Mensagem mensagem;    
+    struct Mensagem mensagem;   
+    struct GuardarMensagens mensagensSalvas; 
 
     /*
      * O primeiro argumento (argv[1]) e o hostname do servidor.
@@ -84,6 +92,13 @@ int main(int argc, char **argv)
 
 	    scanf("%i", &operacao);
 
+	    /* Envia a mensagem no buffer de envio para o servidor */
+	    if (send(s, &operacao, sizeof(int), 0) < 0)
+	    {
+		perror("Send()");
+		exit(5);
+	    }
+
 	    switch(operacao) {
 
 		case 1:
@@ -103,12 +118,27 @@ int main(int argc, char **argv)
 	    		printf("Mensagem enviada ao servidor: Nome: %s Mensagem: %s\n", mensagem.nome, mensagem.mensagem);
 			break;
 		case 2:
-			printf("Mensagens existentes:\n");
-			//fazer receive
+			/* Recebe uma mensagem do cliente atraves do novo socket conectado */
+			if (recv(s, &mensagensSalvas, sizeof(struct GuardarMensagens), 0) == -1)
+			{
+				perror("Recv()");
+				exit(6);
+			}
+			printf("Mensagens existentes: %i\n", mensagensSalvas.count);
+			for(int i = 0; i < mensagensSalvas.count; i++)
+				printf("Nome: %sMensagem: %s\n", mensagensSalvas.array[i].nome, mensagensSalvas.array[i].mensagem);
 			break;
 		case 3:
 			printf("Apagar mensagem:\n");
-			//fazer apagar mensagens
+			printf("Nome: ");
+			__fpurge(stdin);
+			fgets(nome, sizeof(nome), stdin);
+			if (send(s, nome, strlen(nome)+1, 0) < 0)
+	    		{
+				perror("Send()");
+				exit(5);
+	    		}
+	    		printf("Mensagem enviada ao servidor: Nome: %s\n", nome);
 			break;
 		case 4:
 			/* Fecha o socket */
@@ -120,6 +150,7 @@ int main(int argc, char **argv)
 			printf("Opcao invalida!\n");
 			break;
 	    }
+	}
 
 	    /* Recebe a mensagem do servidor no buffer de recepcao */
 	    if (recv(s, recvbuf, sizeof(recvbuf), 0) < 0)
@@ -128,7 +159,5 @@ int main(int argc, char **argv)
 		exit(6);
 	    }
 	    printf("Mensagem recebida do servidor: %s\n", recvbuf);
-
-    }
 
 }

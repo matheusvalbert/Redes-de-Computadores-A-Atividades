@@ -15,6 +15,12 @@ struct Mensagem {
 	char mensagem[80];
 };
 
+struct GuardarMensagens {
+
+	struct Mensagem array[10];
+	int count;
+};
+
 int main(int argc, char **argv)
 {
     unsigned short port;       
@@ -25,7 +31,14 @@ int main(int argc, char **argv)
     int s;                     /* Socket para aceitar conexoes       */
     int ns;                    /* Socket conectado ao cliente        */
     int namelen;
-    struct Mensagem mensagem;               
+    struct Mensagem mensagem;
+    struct GuardarMensagens mensagensSalvas;
+    int operacao;
+    char nome[20];
+    int flag = 0;
+    int j;	
+
+    mensagensSalvas.count = 0;
 
     /*
      * O primeiro argumento (argv[1]) e a porta
@@ -86,6 +99,78 @@ int main(int argc, char **argv)
         perror("Accept()");
         exit(5);
     }
+
+	while(1) {
+		
+		/* Recebe uma mensagem do cliente atraves do novo socket conectado */
+		if (recv(ns, &operacao, sizeof(int), 0) == -1)
+		{
+			perror("Recv()");
+			exit(6);
+		}
+
+		switch(operacao) {		
+
+			case 1:
+				/* Recebe uma mensagem do cliente atraves do novo socket conectado */
+				if (recv(ns, &mensagem, sizeof(struct Mensagem), 0) == -1)
+				{
+					perror("Recv()");
+					exit(6);
+				}
+				strcpy(mensagensSalvas.array[mensagensSalvas.count].nome, mensagem.nome);
+				strcpy(mensagensSalvas.array[mensagensSalvas.count].mensagem, mensagem.mensagem);
+				mensagensSalvas.count++;
+				break;
+
+			case 2:
+				/* Envia a mensagem no buffer de envio para o servidor */
+		    		if (send(ns, &mensagensSalvas, sizeof(struct GuardarMensagens), 0) < 0)
+		    		{
+					perror("Send()");
+					exit(5);
+		    		}
+				break;
+			case 3:
+				    /* Recebe uma mensagem do cliente atraves do novo socket conectado */
+				    if (recv(ns, nome, sizeof(nome), 0) == -1)
+				    {
+					perror("Recv()");
+					exit(6);
+				    }
+				    printf("Mensagem recebida do cliente: Nome: %s\n", nome);
+				j = 0;
+				while(j < mensagensSalvas.count) {
+				for(int i = 0; i < mensagensSalvas.count; i++) {
+				
+					if(strcmp(mensagensSalvas.array[i].nome, nome) == 0)
+						flag = 1;
+
+					if(flag == 1)
+						strcpy(mensagensSalvas.array[i].nome,mensagensSalvas.array[i+1].nome); 
+				}
+				
+				if(flag == 1)
+					mensagensSalvas.count--;
+				flag = 0;
+				j++;
+				}
+				j=0;
+				break;
+			case 4:
+				    /*
+     				     * Aceita uma conexao e cria um novo socket atraves do qual
+    	 			     * ocorrera a comunicacao com o cliente.
+     				     */
+    				namelen = sizeof(client);
+    				if ((ns = accept(s, (struct sockaddr *)&client, (socklen_t *)&namelen)) == -1)
+    				{
+        				perror("Accept()");
+        				exit(5);
+ 			        }
+				break;
+		}
+	}
 
     /* Recebe uma mensagem do cliente atraves do novo socket conectado */
     if (recv(ns, &mensagem, sizeof(struct Mensagem), 0) == -1)
