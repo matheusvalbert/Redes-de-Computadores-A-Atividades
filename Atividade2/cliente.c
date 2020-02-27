@@ -12,7 +12,7 @@
 struct Mensagem 
 {
 
-    char nome[20];
+    	char nome[20];
 	char mensagem[80];
 };
 
@@ -31,13 +31,14 @@ int main(int argc, char **argv)
 {
 
 	unsigned short port;             
-    struct hostent *hostnm;    
-    struct sockaddr_in server; 
-    int s;
-    char nome[20];
-   	int operacao;
-    struct Mensagem mensagem;   
-    struct GuardarMensagens mensagensSalvas, mensagensExcluidas; 
+	struct hostent *hostnm;    
+        struct sockaddr_in server; 
+        int s;
+        char nome[20];
+        int operacao;
+        struct Mensagem mensagem;   
+        struct GuardarMensagens mensagensSalvas, mensagensExcluidas;
+	int podeInserir; 
 
     /*
      * O primeiro argumento (argv[1]) e o hostname do servidor.
@@ -113,29 +114,38 @@ int main(int argc, char **argv)
 
 			perror("Send()");
 			exit(5);
-	    }
+	    	}
 
 		switch(operacao) {
 
 			case 1:
-				printf("Adicionar nova mensagem:\n");
-				printf("Nome: ");
-				__fpurge(stdin);
-				fgets(mensagem.nome, sizeof(mensagem.nome), stdin);
-				printf("Mensagem: ");
-				__fpurge(stdin);
-				fgets(mensagem.mensagem, sizeof(mensagem.mensagem), stdin);
-				
-				/* 
-				 * Envia a mensagem no buffer de envio para o servidor 
-				 */
-		    	if (send(s, &mensagem, sizeof(struct Mensagem), 0) < 0) 
+				if (recv(s, &podeInserir, sizeof(int), 0) == -1) 
 				{
-					perror("Send()");
-					exit(5);
-		    	}
+					perror("Recv()");
+					exit(6);
+				}
+
+				if(podeInserir == 0) {
+					printf("Adicionar nova mensagem:\n");
+					printf("Nome: ");
+					__fpurge(stdin);
+					fgets(mensagem.nome, sizeof(mensagem.nome), stdin);
+					printf("Mensagem: ");
+					__fpurge(stdin);
+					fgets(mensagem.mensagem, sizeof(mensagem.mensagem), stdin);
+					
+					/* 
+					 * Envia a mensagem no buffer de envio para o servidor 
+					 */
+			    		if (send(s, &mensagem, sizeof(struct Mensagem), 0) < 0) 
+					{
+						perror("Send()");
+						exit(5);
+			    		}
+			    		printf("Mensagem inserida com sucesso\n");
+				}
 				else
-		    		printf("Mensagem inserida com sucesso\nNome: %s\nMensagem: %s\n", mensagem.nome, mensagem.mensagem);
+					printf("numero maximo de mensagens atingida\n");
 				break;
 			case 2:
 				/* 
@@ -162,10 +172,10 @@ int main(int argc, char **argv)
 				 * Apaga todas as mensagens pertencentes ao usuário desejado
 				 */
 				if (send(s, nome, strlen(nome)+1, 0) < 0)
-		    	{
+		    		{
 					perror("Send()");
 					exit(5);
-		    	}
+		    		}
 				else 
 				{
 					/*

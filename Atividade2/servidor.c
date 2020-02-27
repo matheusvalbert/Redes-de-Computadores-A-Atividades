@@ -13,7 +13,7 @@
 
 struct Mensagem 
 {
-    char nome[20];
+    	char nome[20];
 	char mensagem[80];
 };
 
@@ -40,6 +40,7 @@ int main(int argc, char **argv)
 	int j, i;
 	mensagensSalvas.count = 0;
 	mensagensExcluidas.count = 0;
+	int podeInserir;
 
 	/*
      * O primeiro argumento (argv[1]) e a porta
@@ -124,18 +125,35 @@ int main(int argc, char **argv)
 		switch(operacao) {		
 
 			case 1:
-				/* 
-				 *Recebe e salva uma mensagem e o nome do cliente
-				 */
-				if (recv(ns, &mensagem, sizeof(struct Mensagem), 0) == -1) 
-				{
-					perror("Recv()");
-					exit(6);
+				if(mensagensSalvas.count < 2) {
+
+					podeInserir = 0;
+					if (send(ns, &podeInserir, sizeof(int), 0) < 0) 
+					{
+							perror("Send()");
+							exit(5);
+			    		}
+					/* 
+					 *Recebe e salva uma mensagem e o nome do cliente
+					 */
+					if (recv(ns, &mensagem, sizeof(struct Mensagem), 0) == -1) 
+					{
+						perror("Recv()");
+						exit(6);
+					}
+					strcpy(mensagensSalvas.array[mensagensSalvas.count].nome, mensagem.nome);
+					strcpy(mensagensSalvas.array[mensagensSalvas.count].mensagem, mensagem.mensagem);
+					mensagensSalvas.count++;
+					printf("Nova mensagem inserida IP: %s Porta: %d\n",inet_ntoa(client.sin_addr),ntohs(client.sin_port));
 				}
-				strcpy(mensagensSalvas.array[mensagensSalvas.count].nome, mensagem.nome);
-				strcpy(mensagensSalvas.array[mensagensSalvas.count].mensagem, mensagem.mensagem);
-				mensagensSalvas.count++;
-				printf("Nova mensagem inserida IP: %s Porta: %d\n",inet_ntoa(client.sin_addr),ntohs(client.sin_port));
+				else {
+					podeInserir = 1;
+					if (send(ns, &podeInserir, sizeof(int), 0) < 0) 
+					{
+							perror("Send()");
+							exit(5);
+			    		}
+				}
 				break;
 
 			case 2:
@@ -189,12 +207,11 @@ int main(int argc, char **argv)
 				/* 
 				 * Envia as mensagens excluídas para o cliente 
 				 */
-		    	if (send(ns, &mensagensExcluidas, sizeof(struct GuardarMensagens), 0) < 0) 
+		    		if (send(ns, &mensagensExcluidas, sizeof(struct GuardarMensagens), 0) < 0) 
 				{
 					perror("Send()");
 					exit(5);
-		    	}
-				printf("Exibicao de mensagens solicitada IP: %s Porta: %d\n",inet_ntoa(client.sin_addr),ntohs(client.sin_port));
+		    		}
 				printf("Nova exclusao de mensagens solicitada IP: %s Porta: %d\n",inet_ntoa(client.sin_addr),ntohs(client.sin_port));
 				mensagensExcluidas.count = 0;
 				break;
