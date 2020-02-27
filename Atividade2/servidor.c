@@ -125,7 +125,8 @@ int main(int argc, char **argv)
 		switch(operacao) {		
 
 			case 1:
-				if(mensagensSalvas.count < 2) {
+				if(mensagensSalvas.count < 10)
+				{
 
 					podeInserir = 0;
 					if (send(ns, &podeInserir, sizeof(int), 0) < 0) 
