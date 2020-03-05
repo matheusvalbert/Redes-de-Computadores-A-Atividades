@@ -37,11 +37,8 @@ int main(int argc, char **argv)
         char nome[20];
         int operacao;
         struct Mensagem mensagem;   
-        struct GuardarMensagens mensagensSalvas, mensagensExcluidas, *mensagensSalvas_p, *mensagensExcluidas_p;
+        struct GuardarMensagens mensagensSalvas, mensagensExcluidas;
 	int podeInserir; 
-
-	mensagensSalvas_p = &mensagensSalvas;
-	mensagensExcluidas_p = &mensagensExcluidas;
 
     /*
      * O primeiro argumento (argv[1]) e o hostname do servidor.
@@ -154,7 +151,7 @@ int main(int argc, char **argv)
 				/* 
 				 * Recebe uma mensagem do cliente atraves do socket conectado 
 				 */
-				if (recv(s, mensagensSalvas_p, sizeof(struct GuardarMensagens), 0) == -1) {
+				if (recv(s, &mensagensSalvas, sizeof(struct GuardarMensagens), 0) == -1) {
 
 					perror("Recv()");
 					exit(6);
@@ -162,9 +159,9 @@ int main(int argc, char **argv)
 				/*
 				 * Exibe as mensagens para o cliente
 				 */
-				printf("Mensagens existentes: %i\n", mensagensSalvas_p->count);
-				for(int i = 0; i < mensagensSalvas_p->count; i++)
-					printf("Nome: %sMensagem: %s\n", mensagensSalvas_p->array[i].nome, mensagensSalvas_p->array[i].mensagem);
+				printf("Mensagens existentes: %i\n", mensagensSalvas.count);
+				for(int i = 0; i < mensagensSalvas.count; i++)
+					printf("Nome: %sMensagem: %s\n", mensagensSalvas.array[i].nome, mensagensSalvas.array[i].mensagem);
 				break;
 			case 3:
 				printf("Apagar mensagem:\n");
@@ -184,15 +181,15 @@ int main(int argc, char **argv)
 					/*
 					 * Exibe as mensagens apagadas e o respectivo número de quantas mensagens foram apagadas
 					 */
-		    		if (recv(s, mensagensExcluidas_p, sizeof(struct GuardarMensagens), 0) == -1) 
+		    		if (recv(s, &mensagensExcluidas, sizeof(struct GuardarMensagens), 0) == -1) 
 					{
 
 						perror("Recv()");
 						exit(6);
 					}
-					printf("Mensagens Apagadas %d\n", mensagensExcluidas_p->count);
-					for(int i = 0; i < mensagensExcluidas_p->count; i++)
-						printf("Nome: %sMensagem: %s\n", mensagensExcluidas_p->array[i].nome, mensagensExcluidas_p->array[i].mensagem);
+					printf("Mensagens Apagadas %d\n", mensagensExcluidas.count);
+					for(int i = 0; i < mensagensExcluidas.count; i++)
+						printf("Nome: %sMensagem: %s\n", mensagensExcluidas.array[i].nome, mensagensExcluidas.array[i].mensagem);
 				}
 				break;
 			case 4:
