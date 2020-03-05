@@ -191,6 +191,10 @@ int main(int argc, char **argv)
 				switch(operacao) {		
 
 					case 1:
+						if( semop(semid, up, 1) == -1 ) {
+							fprintf(stderr,"chamada semop() falhou, impossivel inicializar o semaforo!");
+							exit(1);
+						}
 						if(mensagensSalvas->count < 10)
 						{
 
@@ -208,17 +212,9 @@ int main(int argc, char **argv)
 								perror("Recv()");
 								exit(6);
 							}
-							if( semop(semid, up, 1) == -1 ) {
-								fprintf(stderr,"chamada semop() falhou, impossivel inicializar o semaforo!");
-								exit(1);
-							}
 							strcpy(mensagensSalvas->array[mensagensSalvas->count].nome, mensagem.nome);
 							strcpy(mensagensSalvas->array[mensagensSalvas->count].mensagem, mensagem.mensagem);
 							mensagensSalvas->count++;
-							if( semop(semid, down, 1) == -1 ) {
-								fprintf(stderr,"chamada semop() falhou, impossivel inicializar o semaforo!");
-								exit(1);
-							}
 							printf("Nova mensagem inserida IP: %s Porta: %d filho: %d\n",inet_ntoa(client.sin_addr),ntohs(client.sin_port), fid);
 						}
 						else {
@@ -228,6 +224,10 @@ int main(int argc, char **argv)
 									perror("Send()");
 									exit(5);
 					    		}
+						}
+						if( semop(semid, down, 1) == -1 ) {
+							fprintf(stderr,"chamada semop() falhou, impossivel inicializar o semaforo!");
+							exit(1);
 						}
 						break;
 
