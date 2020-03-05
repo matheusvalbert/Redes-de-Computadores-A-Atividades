@@ -37,10 +37,11 @@ int main(int argc, char **argv)
         char nome[20];
         int operacao;
         struct Mensagem mensagem;   
-        struct GuardarMensagens mensagensSalvas, mensagensExcluidas, *mensagensSalvas_p;
+        struct GuardarMensagens mensagensSalvas, mensagensExcluidas, *mensagensSalvas_p, *mensagensExcluidas_p;
 	int podeInserir; 
 
 	mensagensSalvas_p = &mensagensSalvas;
+	mensagensExcluidas_p = &mensagensExcluidas;
 
     /*
      * O primeiro argumento (argv[1]) e o hostname do servidor.
@@ -183,15 +184,15 @@ int main(int argc, char **argv)
 					/*
 					 * Exibe as mensagens apagadas e o respectivo número de quantas mensagens foram apagadas
 					 */
-		    		if (recv(s, &mensagensExcluidas, sizeof(struct GuardarMensagens), 0) == -1) 
+		    		if (recv(s, mensagensExcluidas_p, sizeof(struct GuardarMensagens), 0) == -1) 
 					{
 
 						perror("Recv()");
 						exit(6);
 					}
-					printf("Mensagens Apagadas %d\n", mensagensExcluidas.count);
-					for(int i = 0; i < mensagensExcluidas.count; i++)
-						printf("Nome: %sMensagem: %s\n", mensagensExcluidas.array[i].nome, mensagensExcluidas.array[i].mensagem);
+					printf("Mensagens Apagadas %d\n", mensagensExcluidas_p->count);
+					for(int i = 0; i < mensagensExcluidas_p->count; i++)
+						printf("Nome: %sMensagem: %s\n", mensagensExcluidas_p->array[i].nome, mensagensExcluidas_p->array[i].mensagem);
 				}
 				break;
 			case 4:
