@@ -184,7 +184,7 @@ int main(int argc, char **argv)
 			{
 				
 				/*
-				 * Recebe qual opera√ß√£o o cliente deseja realizar
+				 * Recebe qual operaÁ„o o cliente deseja realizar
 				 */
 				 
 				if (recv(ns, &operacao, sizeof(int), 0) == -1) 
@@ -258,7 +258,7 @@ int main(int argc, char **argv)
 						
 					case 3:
 						/* 
-						 * Recebe o nome do usu√°rio que possuir√° suas mensagens deletas
+						 * Recebe o nome do usu·rio que possuir· suas mensagens deletas
 		 				 */
 						if (recv(ns, nome, sizeof(nome), 0) == -1) {
 
@@ -297,7 +297,7 @@ int main(int argc, char **argv)
 						}
 						j = 0;
 						/* 
-						 * Envia as mensagens exclu√≠das para o cliente 
+						 * Envia as mensagens excluÌdas para o cliente 
 						 */
 				    		if (send(ns, mensagensExcluidas, sizeof(struct GuardarMensagens), 0) < 0) 
 						{
