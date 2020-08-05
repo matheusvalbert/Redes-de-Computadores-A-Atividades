@@ -1,5 +1,3 @@
-# Redes-de-Computadores-A---Atividades
-
 # Introdução
 ```
 Estas atividades foram desenvolvidas para o sétimo semestre na disciplina de Redes de Computadores A.
